@@ -3,6 +3,7 @@ import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { PencilLine, Trash2,DollarSign  } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   fetchTipsFromFirestore,
   addTipToFirestore,
@@ -19,7 +20,7 @@ export default function Dashboard() {
   });
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate();
-
+  console.log(form)
   const fetchTips = async () => {
     const data = await fetchTipsFromFirestore();
     setTips(data);
@@ -43,9 +44,12 @@ export default function Dashboard() {
             tip.id === editingId ? { ...tip, ...form } : tip
           )
         );
+        toast.success(" Propina actualizada");
         setEditingId(null);
       } else {
         await addTipToFirestore(form);
+        toast.success(" Propina agregada");
+        
         fetchTips(); // solo si es nuevo lo volvemos a pedir completo
       }
       setForm({ amount: "", comment: "", date: new Date().toISOString().slice(0, 10) });
@@ -60,6 +64,7 @@ export default function Dashboard() {
 
   // borra la propina
   const handleDelete = async (id) => {
+    toast.success("🗑️ Propina eliminada");
     await deleteTipFromFirestore(id);
     fetchTips();
   };
@@ -139,7 +144,9 @@ export default function Dashboard() {
                             const date = raw?.toDate
                               ? raw.toDate()
                               : new Date(raw?.seconds ? raw.seconds * 1000 : raw);
-                            return date.toLocaleDateString("es-AR");
+                            return date.toLocaleDateString("es-AR", {
+                              timeZone: "UTC",
+                            });
                           })()}
                         </p>
                         {tip.comment && (
