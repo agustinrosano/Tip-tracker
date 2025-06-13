@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate();
   console.log(form)
+  
   const fetchTips = async () => {
     const data = await fetchTipsFromFirestore();
     setTips(data);

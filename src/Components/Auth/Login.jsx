@@ -19,6 +19,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log(userCredential)
       localStorage.setItem("user", JSON.stringify(userCredential.user));
       await login(userCredential.user);
       navigate("/dashboard");
