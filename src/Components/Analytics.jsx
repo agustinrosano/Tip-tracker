@@ -1,15 +1,8 @@
-// Layout.jsx actualizado con sidebar deslizable y vista de análisis extendida
 import React, { useState, useEffect } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
-import { auth, db } from "./firebase";
+import { auth, db } from "../Components/firebase";
 import {
   collection,
   getDocs,
-  query,
-  where,
-  Timestamp,
 } from "firebase/firestore";
 import {
   BarChart,
@@ -26,6 +19,7 @@ export default function Analytics() {
   const [monthly, setMonthly] = useState([]);
   const [filteredTips, setFilteredTips] = useState([]);
   const [filter, setFilter] = useState("day");
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
   useEffect(() => {
     const loadData = async () => {
@@ -34,14 +28,11 @@ export default function Analytics() {
       const snapshot = await getDocs(tipsRef);
       const tips = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-      const byDay = {};
-      const byMonth = {};
       const today = new Date();
       const currentDay = today.toISOString().slice(0, 10);
       const weekAgo = new Date(today);
       weekAgo.setDate(today.getDate() - 7);
 
-      const thisMonth = today.getMonth();
       const filtered = tips.filter((tip) => {
         const date = new Date(tip.date);
         if (filter === "day") {
@@ -49,13 +40,24 @@ export default function Analytics() {
         } else if (filter === "week") {
           return date >= weekAgo && date <= today;
         } else if (filter === "month") {
-          return date.getMonth() === thisMonth && date.getFullYear() === today.getFullYear();
+          return (
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
+          );
+        } else if (filter === "specificMonth") {
+          return (
+            date.getMonth() === selectedMonth &&
+            date.getFullYear() === today.getFullYear()
+          );
         } else {
           return true;
         }
       });
 
-      tips.forEach((tip) => {
+      const byDay = {};
+      const byMonth = {};
+
+      filtered.forEach((tip) => {
         const date = new Date(tip.date);
         const day = date.toLocaleDateString("es-AR", { weekday: "short" });
         const month = date.toLocaleDateString("es-AR", { month: "short" });
@@ -69,25 +71,41 @@ export default function Analytics() {
     };
 
     loadData();
-  }, [filter]);
+  }, [filter, selectedMonth]);
 
   return (
     <div className="space-y-10 p-4">
-
-        <section>
-        <div className="flex justify-between items-center mb-4">
+      <section>
+        <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-rose-700">Listado de propinas</h2>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="border border-rose-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rose-400"
-          >
-            <option value="day">Hoy</option>
-            <option value="week">Esta semana</option>
-            <option value="month">Este mes</option>
-            <option value="all">Todas</option>
-          </select>
+          <div className="flex gap-2">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="border border-rose-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rose-400"
+            >
+              <option value="day">Hoy</option>
+              <option value="week">Esta semana</option>
+              <option value="month">Este mes</option>
+              <option value="specificMonth">Elegir mes</option>
+              <option value="all">Todas</option>
+            </select>
+            {filter === "specificMonth" && (
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="border border-rose-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-rose-400"
+              >
+                {[...Array(12)].map((_, i) => (
+                  <option key={i} value={i}>
+                    {new Date(2025, i).toLocaleString("es-AR", { month: "long" })}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
+
         <div className="overflow-auto rounded-md border border-rose-200">
           <table className="min-w-full text-sm">
             <thead className="bg-rose-100 text-rose-700">
@@ -116,7 +134,7 @@ export default function Analytics() {
           </table>
         </div>
       </section>
-      
+
       <section>
         <h2 className="text-xl font-bold text-rose-700 mb-2">Total por día de la semana</h2>
         <ResponsiveContainer width="100%" height={300}>
@@ -142,8 +160,6 @@ export default function Analytics() {
           </BarChart>
         </ResponsiveContainer>
       </section>
-
-    
     </div>
   );
 }

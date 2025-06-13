@@ -1,19 +1,26 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
+import { AuthContext } from "../../context/AuthProvider";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+
+
+  const {user} = useContext(AuthContext);
+  console.log("Context:", user);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       localStorage.setItem("user", JSON.stringify(userCredential.user));
+      await login(userCredential.user);
       navigate("/dashboard");
     } catch (err) {
       setError("Email o contraseña incorrectos");
