@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { auth, db } from "../Components/firebase";
-import {
-  collection,
-  getDocs,
-} from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import {
   BarChart,
   Bar,
@@ -17,6 +14,7 @@ import {
 export default function Analytics() {
   const [weekly, setWeekly] = useState([]);
   const [monthly, setMonthly] = useState([]);
+  const [daily, setDaily] = useState([]);
   const [filteredTips, setFilteredTips] = useState([]);
   const [filter, setFilter] = useState("day");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -54,20 +52,61 @@ export default function Analytics() {
         }
       });
 
+      // Ordenar tips por fecha descendente
+      const sortedTips = [...filtered].sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+      setFilteredTips(sortedTips);
+
+      // Agrupaciones
       const byDay = {};
       const byMonth = {};
+      const byFullDate = {};
 
       filtered.forEach((tip) => {
         const date = new Date(tip.date);
-        const day = date.toLocaleDateString("es-AR", { weekday: "short" });
+
+        const dayLabel = date.toLocaleDateString("es-AR", { weekday: "short" });
+        const dateLabel = date.toLocaleDateString("es-AR", {
+          day: "2-digit",
+          month: "2-digit",
+        });
+        const label = `${dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)} ${dateLabel}`;
+
+        byDay[label] = (byDay[label] || 0) + Number(tip.amount);
+
         const month = date.toLocaleDateString("es-AR", { month: "short" });
-        byDay[day] = (byDay[day] || 0) + Number(tip.amount);
         byMonth[month] = (byMonth[month] || 0) + Number(tip.amount);
+
+        byFullDate[dateLabel] = (byFullDate[dateLabel] || 0) + Number(tip.amount);
       });
 
-      setWeekly(Object.entries(byDay).map(([day, total]) => ({ day, total })));
-      setMonthly(Object.entries(byMonth).map(([month, total]) => ({ month, total })));
-      setFilteredTips(filtered);
+      const dayOrder = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+      const sortedWeekly = Object.entries(byDay)
+        .map(([label, total]) => {
+          const dayPrefix = label.split(" ")[0]; // ej: "Lun"
+          return { label, total, day: dayPrefix };
+        })
+        .sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
+      setWeekly(sortedWeekly);
+
+      const monthOrder = [
+        "ene.", "feb.", "mar.", "abr.", "may.", "jun.",
+        "jul.", "ago.", "sep.", "oct.", "nov.", "dic."
+      ];
+      const sortedMonthly = Object.entries(byMonth)
+        .map(([month, total]) => ({ month, total }))
+        .sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
+      setMonthly(sortedMonthly);
+
+      const sortedDaily = Object.entries(byFullDate)
+        .map(([date, total]) => ({ date, total }))
+        .sort((a, b) => {
+          const [d1, m1] = a.date.split("/").map(Number);
+          const [d2, m2] = b.date.split("/").map(Number);
+          return new Date(today.getFullYear(), m1 - 1, d1) - new Date(today.getFullYear(), m2 - 1, d2);
+        });
+      setDaily(sortedDaily);
     };
 
     loadData();
@@ -75,6 +114,7 @@ export default function Analytics() {
 
   return (
     <div className="space-y-10 p-4">
+      {/* Filtros */}
       <section>
         <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-rose-700">Listado de propinas</h2>
@@ -86,7 +126,6 @@ export default function Analytics() {
             >
               <option value="day">Hoy</option>
               <option value="week">Esta semana</option>
-              {/* <option value="month">Este mes</option> */}
               <option value="specificMonth">Elegir mes</option>
               <option value="all">Todas</option>
             </select>
@@ -106,6 +145,7 @@ export default function Analytics() {
           </div>
         </div>
 
+        {/* Tabla */}
         <div className="overflow-auto rounded-md border border-rose-200">
           <table className="min-w-full text-sm">
             <thead className="bg-rose-100 text-rose-700">
@@ -135,12 +175,13 @@ export default function Analytics() {
         </div>
       </section>
 
+      {/* Gráfico: Día de la semana */}
       <section>
         <h2 className="text-xl font-bold text-rose-700 mb-2">Total por día de la semana</h2>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={weekly}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="day" />
+            <XAxis dataKey="label" />
             <YAxis />
             <Tooltip />
             <Bar dataKey="total" fill="#f43f5e" />
@@ -148,6 +189,7 @@ export default function Analytics() {
         </ResponsiveContainer>
       </section>
 
+      {/* Gráfico: Mes */}
       <section>
         <h2 className="text-xl font-bold text-rose-700 mb-2">Total por mes</h2>
         <ResponsiveContainer width="100%" height={300}>
@@ -157,6 +199,20 @@ export default function Analytics() {
             <YAxis />
             <Tooltip />
             <Bar dataKey="total" fill="#ec4899" />
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
+
+      {/* Gráfico: Día (DD/MM) */}
+      <section>
+        <h2 className="text-xl font-bold text-rose-700 mb-2">Total por día (DD/MM)</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={daily}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="total" fill="#f472b6" />
           </BarChart>
         </ResponsiveContainer>
       </section>
