@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate,useLocation } from "react-router-dom";
 import Login from "./Components/Auth/Login";
 import Signup from "./Components/Auth/Signup";
 import Dashboard from "./Components/Dashboard";
@@ -12,12 +12,18 @@ import PrivateRoute from "./context/PrivateRoute";
 function AppRoutes() {
   const { user, loading } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    if (!loading && user) {
-      navigate("/dashboard");
+   useEffect(() => {
+    const user = localStorage.getItem("user");
+    const isLoginRoute = location.pathname === "/login";
+
+    if (!user && !isLoginRoute) {
+      navigate("/login");
     }
-  }, [loading, user, navigate]);
+    // Si hay usuario, no hacemos nada aquí para no interrumpir la navegación
+  }, [location.pathname, navigate]);
+
 
   if (loading) {
     return (

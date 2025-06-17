@@ -86,7 +86,7 @@ export default function Analytics() {
             >
               <option value="day">Hoy</option>
               <option value="week">Esta semana</option>
-              <option value="month">Este mes</option>
+              {/* <option value="month">Este mes</option> */}
               <option value="specificMonth">Elegir mes</option>
               <option value="all">Todas</option>
             </select>
