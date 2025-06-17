@@ -8,12 +8,14 @@ import Analytics from "./Components/Analytics";
 import { Toaster } from "react-hot-toast";
 import { AuthContext, AuthProvider } from "./context/AuthProvider";
 import PrivateRoute from "./context/PrivateRoute";
+import usePushNotifications from "./Components/hooks/usePushNotifications";
 
 function AppRoutes() {
   const { user, loading } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-
+  usePushNotifications()
+  
    useEffect(() => {
     const user = localStorage.getItem("user");
     const isLoginRoute = location.pathname === "/login";
