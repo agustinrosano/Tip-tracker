@@ -22,11 +22,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
   console.log(form)
   
-  const fetchTips = async () => {
-    const data = await fetchTipsFromFirestore();
-    setTips(data);
-  };
-
+const fetchTips = async () => {
+  const data = await fetchTipsFromFirestore();
+  const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+  setTips(sorted);
+};
   useEffect(() => {
     fetchTips();
   }, []);
