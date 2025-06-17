@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453246943478",
+    "project_id": "propina-8b0d1",
+    "storage_bucket": "propina-8b0d1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453246943478:android:1d6e3d519471a2fd7e6cd7",
+        "android_client_info": {
+          "package_name": "com.bubba.tiptracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzuT7O4zIHeec8kHTI5TTTeNvkN9w3t5o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

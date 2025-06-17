@@ -1,12 +1,20 @@
-// src/hooks/usePushNotifications.js
 import { useEffect } from "react";
 import { PushNotifications } from "@capacitor/push-notifications";
+import { Capacitor } from "@capacitor/core";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 const usePushNotifications = () => {
   useEffect(() => {
     const registerNotifications = async () => {
+      const platform = Capacitor.getPlatform();
+
+      // Solo registrar si estamos en Android o iOS
+      if (platform !== 'android' && platform !== 'ios') {
+        console.log("🔕 PushNotifications no soportado en esta plataforma:", platform);
+        return;
+      }
+
       try {
         const permissionStatus = await PushNotifications.requestPermissions();
         if (permissionStatus.receive === 'granted') {
