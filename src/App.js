@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthContext, AuthProvider } from "./context/AuthProvider";
 import PrivateRoute from "./context/PrivateRoute";
 import usePushNotifications from "./Components/hooks/usePushNotifications";
+import { Loader } from "./Components/Loader/Loader";
 
 function AppRoutes() {
   const { user, loading } = useContext(AuthContext);
@@ -30,7 +31,7 @@ function AppRoutes() {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-rose-50">
-        <p className="text-rose-700 font-semibold text-xl">Cargando...</p>
+          <Loader/>
       </div>
     );
   }
