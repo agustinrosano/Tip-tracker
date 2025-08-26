@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { PencilLine, Trash2,DollarSign  } from "lucide-react";
+import { PencilLine, Trash2, DollarSign  } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   fetchTipsFromFirestore,
@@ -20,14 +20,18 @@ export default function Dashboard() {
   });
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate();
-  console.log(form)
+  
   
 const fetchTips = async () => {
   const data = await fetchTipsFromFirestore();
   const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
   setTips(sorted);
 };
-  useEffect(() => {
+
+// englobar esto cuando se cargue un usuario, por que si no se ejecuta todo el rato
+
+
+useEffect(() => {
     fetchTips();
   }, []);
 

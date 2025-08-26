@@ -14,16 +14,16 @@ import { where } from "firebase/firestore";
 
 export const fetchTipsFromFirestore = async () => {
   const user = JSON.parse(localStorage.getItem("user")); // o auth.currentUser
-  const tipsRef = collection(db, `users/${user.uid}/tips`);
+  const tipsRef = collection(db, `users/${user.uid}/tips`); //2bDkDHGKGeUQobH8rd0CRDQDcrf2
   const q = query(tipsRef, orderBy("date", "desc"));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
 export const addTipToFirestore = async ({ amount, comment, date }) => {
-
   try{
   const user = JSON.parse(localStorage.getItem("user"));
+    if(!user.uid) return
   const tipRef = collection(db, `users/${user.uid}/tips`);
   return await addDoc(tipRef, {
     amount,
